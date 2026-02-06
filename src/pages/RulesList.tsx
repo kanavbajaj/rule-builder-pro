@@ -179,28 +179,28 @@ export default function RulesList() {
             />
           </div>
           <Select
-            value={statusFilter}
-            onValueChange={(v) => updateFilters('status', v)}
+            value={statusFilter || '__all__'}
+            onValueChange={(v) => updateFilters('status', v === '__all__' ? '' : v)}
           >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Status</SelectItem>
+              <SelectItem value="__all__">All Status</SelectItem>
               <SelectItem value="ACTIVE">Active</SelectItem>
               <SelectItem value="DRAFT">Draft</SelectItem>
               <SelectItem value="INACTIVE">Inactive</SelectItem>
             </SelectContent>
           </Select>
           <Select
-            value={eventFilter}
-            onValueChange={(v) => updateFilters('event', v)}
+            value={eventFilter || '__all__'}
+            onValueChange={(v) => updateFilters('event', v === '__all__' ? '' : v)}
           >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="All Events" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Events</SelectItem>
+              <SelectItem value="__all__">All Events</SelectItem>
               {RULE_EVENTS.map((e) => (
                 <SelectItem key={e.value} value={e.value}>
                   {e.label}
