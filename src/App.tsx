@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import RulesList from "./pages/RulesList";
 import RuleEditor from "./pages/RuleEditor";
 import RuleHistory from "./pages/RuleHistory";
+import ProductsList from "./pages/ProductsList";
+import ProductEditor from "./pages/ProductEditor";
 import Simulator from "./pages/Simulator";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +26,9 @@ const App = () => (
           <Route path="/rules/new" element={<RuleEditor />} />
           <Route path="/rules/:id" element={<RuleEditor />} />
           <Route path="/rules/:id/history" element={<RuleHistory />} />
+          <Route path="/products" element={<ProductsList />} />
+          <Route path="/products/new" element={<ProductEditor />} />
+          <Route path="/products/:id" element={<ProductEditor />} />
           <Route path="/simulate" element={<Simulator />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
