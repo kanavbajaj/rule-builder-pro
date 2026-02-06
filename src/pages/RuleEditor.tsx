@@ -45,7 +45,7 @@ export default function RuleEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -346,7 +346,7 @@ export default function RuleEditor() {
               <div className="space-y-2">
                 <Label htmlFor="event">Trigger Event</Label>
                 <Select
-                  value={rule.event}
+                  value={rule.event || undefined}
                   onValueChange={(v) => setRule({ ...rule, event: v as RuleEvent })}
                   disabled={!isEditable}
                 >
