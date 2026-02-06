@@ -347,6 +347,74 @@ export async function fetchProducts(): Promise<Product[]> {
   return (data || []).map(dbToProduct);
 }
 
+export async function fetchProduct(id: string): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? dbToProduct(data) : null;
+}
+
+export async function createProduct(product: Partial<Product>, actor: string = 'Manager'): Promise<Product> {
+  const { data, error } = await supabase
+    .from('products')
+    .insert({
+      id: product.id || crypto.randomUUID(),
+      name: product.name!,
+      active: product.active ?? true,
+      required_scores: (product.required_scores || {}) as unknown as Json,
+      weight_by_score: (product.weight_by_score || {}) as unknown as Json,
+      exclusions: (product.exclusions || []) as unknown as Json,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  await supabase.from('audit_logs').insert({
+    entity_type: 'PRODUCT',
+    entity_id: data.id,
+    action: 'CREATE',
+    actor,
+    after_state: data as unknown as Json,
+  });
+
+  return dbToProduct(data);
+}
+
+export async function updateProduct(id: string, updates: Partial<Product>, actor: string = 'Manager'): Promise<Product> {
+  const { data: before } = await supabase.from('products').select('*').eq('id', id).single();
+
+  const { data, error } = await supabase
+    .from('products')
+    .update({
+      name: updates.name,
+      active: updates.active,
+      required_scores: updates.required_scores as unknown as Json,
+      weight_by_score: updates.weight_by_score as unknown as Json,
+      exclusions: updates.exclusions as unknown as Json,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  await supabase.from('audit_logs').insert({
+    entity_type: 'PRODUCT',
+    entity_id: id,
+    action: 'UPDATE',
+    actor,
+    before_state: before as unknown as Json,
+    after_state: data as unknown as Json,
+  });
+
+  return dbToProduct(data);
+}
+
 // PROFILES API
 
 export async function fetchProfile(customerId: string): Promise<Profile | null> {

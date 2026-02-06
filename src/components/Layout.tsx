@@ -6,6 +6,7 @@ import {
   FlaskConical,
   Settings,
   ChevronDown,
+  Package,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ import { useState } from 'react';
 const NAV_ITEMS = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/rules', label: 'Rules', icon: FileCode2 },
+  { path: '/products', label: 'Products', icon: Package },
   { path: '/simulate', label: 'Simulator', icon: FlaskConical },
 ];
 
