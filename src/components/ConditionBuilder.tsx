@@ -54,14 +54,14 @@ export function ConditionBuilder({ conditions, onChange }: ConditionBuilderProps
         <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
           {/* Field selector */}
           <Select
-            value={condition.source}
+            value={condition.source || undefined}
             onValueChange={(v) => updateCondition(index, 'source', v)}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select field" />
             </SelectTrigger>
             <SelectContent>
-              {FIELD_SUGGESTIONS.map((field) => (
+              {FIELD_SUGGESTIONS.filter((field) => field.path !== '').map((field) => (
                 <SelectItem key={field.path} value={field.path}>
                   {field.label}
                 </SelectItem>

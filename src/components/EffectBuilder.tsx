@@ -102,14 +102,14 @@ export function EffectBuilder({ effects, onChange }: EffectBuilderProps) {
             <>
               {/* Score name */}
               <Select
-                value={effect.score || ''}
+                value={effect.score || undefined}
                 onValueChange={(v) => updateEffect(index, { score: v })}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select score" />
                 </SelectTrigger>
                 <SelectContent>
-                  {KNOWN_SCORES.map((score) => (
+                  {KNOWN_SCORES.filter((score) => score !== '').map((score) => (
                     <SelectItem key={score} value={score}>
                       {score}
                     </SelectItem>
