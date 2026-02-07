@@ -1,4 +1,4 @@
-// RuleEditor.tsx - Final Production Version
+// RuleEditor.tsx - Fixed Apply & Save functionality
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
@@ -281,25 +281,25 @@ export default function RuleEditor() {
   // VALIDATION
   // ============================================================================
 
-  function validate(): string[] {
+  function validateRule(ruleToValidate: Partial<Rule>): string[] {
     const errors: string[] = [];
 
     // Basic validations
-    if (!rule.name?.trim()) {
+    if (!ruleToValidate.name?.trim()) {
       errors.push('Rule name is required');
     }
-    if (!rule.event) {
+    if (!ruleToValidate.event) {
       errors.push('Event type is required');
     }
-    if (!rule.conditions?.length) {
+    if (!ruleToValidate.conditions?.length) {
       errors.push('At least one condition is required');
     }
-    if (!rule.effects?.length) {
+    if (!ruleToValidate.effects?.length) {
       errors.push('At least one effect is required');
     }
 
     // Validate each condition
-    rule.conditions?.forEach((c, i) => {
+    ruleToValidate.conditions?.forEach((c, i) => {
       if (!c.source) {
         errors.push(`Condition ${i + 1}: Field is required`);
       }
@@ -309,7 +309,7 @@ export default function RuleEditor() {
     });
 
     // Validate each effect
-    rule.effects?.forEach((e: any, i: number) => {
+    ruleToValidate.effects?.forEach((e: any, i: number) => {
       if (e.type === 'scoreDelta') {
         if (!e.score) {
           errors.push(`Effect ${i + 1}: Score name is required`);
@@ -326,6 +326,10 @@ export default function RuleEditor() {
     });
 
     return errors;
+  }
+
+  function validate(): string[] {
+    return validateRule(rule);
   }
 
   // ============================================================================
@@ -561,7 +565,7 @@ export default function RuleEditor() {
   /**
    * Apply AI-generated draft to the editor
    */
-  function applyAIDraft(withSave = false) {
+  async function applyAIDraft(withSave = false) {
     if (!aiDraft) return;
 
     const merged: Partial<Rule> = {
@@ -578,18 +582,61 @@ export default function RuleEditor() {
     setRule(merged);
     setValidationErrors([]); // Clear any existing validation errors
 
-    toast({
-      title: 'Draft Applied',
-      description: withSave ? 'Rule applied and saving...' : 'Draft applied to editor',
-    });
-
     // Clear AI state
     setAiDraft(null);
     setAiQuery('');
 
     if (withSave) {
-      // Use setTimeout to ensure state is updated before saving
-      setTimeout(() => handleSave(), 100);
+      // Validate the merged rule
+      const errors = validateRule(merged);
+      setValidationErrors(errors);
+
+      if (errors.length > 0) {
+        toast({
+          title: 'Validation Error',
+          description: 'Please fix the errors before saving',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      try {
+        setSaving(true);
+        toast({
+          title: 'Applying & Saving',
+          description: 'Saving your rule...',
+        });
+
+        if (isNew) {
+          const created = await createRule(merged);
+          toast({
+            title: 'Success',
+            description: 'Rule created and saved successfully',
+          });
+          navigate(`/rules/${created.id}`);
+        } else {
+          await updateRule(id!, merged);
+          toast({
+            title: 'Success',
+            description: 'Rule saved successfully',
+          });
+          await loadRule(id!);
+        }
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to save rule';
+        toast({
+          title: 'Error',
+          description: message,
+          variant: 'destructive',
+        });
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      toast({
+        title: 'Draft Applied',
+        description: 'Draft applied to editor',
+      });
     }
   }
 
@@ -759,9 +806,9 @@ export default function RuleEditor() {
                       <Button
                           variant="outline"
                           onClick={() => applyAIDraft(true)}
-                          disabled={!isEditable}
+                          disabled={!isEditable || saving}
                       >
-                        Apply & Save
+                        {saving ? 'Saving...' : 'Apply & Save'}
                       </Button>
                       <Button variant="ghost" onClick={clearAIDraft} disabled={!isEditable}>
                         Clear
